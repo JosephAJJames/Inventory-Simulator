@@ -3,18 +3,27 @@
 
 inventory(Map) ->
    receive
-      {add, Item, Amount} -> NewMap = maps:put(Item, maps:get(Item, Map) + Amount, Map),
-         io:format("Transaction Complete~n"),
-         inventory(NewMap);
+      {add, Item, Amount} -> 
+         try
+            NewMap = maps:put(Item, maps:get(Item, Map) + Amount, Map),
+            io:format("Transaction Complete~n"),
+            inventory(NewMap)
+         catch
+            error:{badkey,_} -> io:format("Product dosen't exist~n")
+         end;
       {rmv, Item, Amount} ->
-         NewAmount = maps:get(Item, Map) - Amount,
-         if NewAmount < 0 -> 
-               io:format("Stock can't go below 0~n"),
-               inventory(Map);
-         true ->
-               NewMap = maps:put(Item, maps:get(Item, Map) - Amount, Map),
-               io:format("Transaction Complete~n"),
-               inventory(NewMap)
+         try
+            NewAmount = maps:get(Item, Map) - Amount,
+            if NewAmount < 0 -> 
+                  io:format("Stock can't go below 0~n"),
+                  inventory(Map);
+            true ->
+                  NewMap = maps:put(Item, maps:get(Item, Map) - Amount, Map),
+                  io:format("Transaction Complete~n"),
+                  inventory(NewMap)
+            end
+         catch
+            error:{badkey,_} -> io:format("Product dosen't exist~n")
          end;
       _ -> io:format("Wrong Format~n")
    end.
